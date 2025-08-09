@@ -1,0 +1,236 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row">
+        <div class="col-md-3">
+            <!-- User Profile Sidebar -->
+            <div class="card mb-4">
+                <div class="card-body text-center">
+                    <img src="{% if request.user.profile_picture %}{{ request.user.profile_picture.url }}{% else %}{% static 'images/default-profile.png' %}{% endif %}" 
+                         class="rounded-circle img-fluid" style="width: 150px; height: 150px; object-fit: cover;">
+                    <h5 class="my-3">{{ request.user.get_full_name|default:request.user.username }}</h5>
+                    <p class="text-muted mb-1">{{ request.user.user_type|title }}</p>
+                    <p class="text-muted mb-4">{{ request.user.email }}</p>
+                    <a href="{% url 'profile' %}" class="btn btn-primary">Edit Profile</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-9">
+            <!-- Dashboard Content -->
+            {% if request.user.user_type == 'landlord' %}
+                <!-- Landlord Dashboard -->
+                <div class="card mb-4">
+                    <div class="card-header bg-primary text-white">
+                        <h5>My Properties</h5>
+                    </div>
+                    <div class="card-body">
+                        {% if properties %}
+                            <div class="table-responsive">
+                                <table class="table table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th>Property</th>
+                                            <th>Status</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for property in properties %}
+                                        <tr>
+                                            <td>
+                                                <a href="{% url 'property_detail' property.pk %}">{{ property.title }}</a>
+                                            </td>
+                                            <td>
+                                                {% if property.is_verified %}
+                                                    <span class="badge bg-success">Verified</span>
+                                                {% else %}
+                                                    <span class="badge bg-warning text-dark">Pending</span>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                <a href="{% url 'property_update' property.pk %}" class="btn btn-sm btn-outline-primary">Edit</a>
+                                            </td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                            <a href="{% url 'property_create' %}" class="btn btn-primary mt-3">Add New Property</a>
+                        {% else %}
+                            <p>You haven't listed any properties yet.</p>
+                            <a href="{% url 'property_create' %}" class="btn btn-primary">List Your First Property</a>
+                        {% endif %}
+                    </div>
+                </div>
+            {% else %}
+                <!-- Tenant Dashboard -->
+                <div class="card mb-4">
+                    <div class="card-header bg-primary text-white">
+                        <h5>Favorite Properties</h5>
+                    </div>
+                    <div class="card-body">
+                        {% if favorites %}
+                            <div class="row">
+                                {% for property in favorites %}
+                                <div class="col-md-6 mb-4">
+                                    <div class="card h-100">
+                                        {% if property.images.first %}
+                                        <img src="{{ property.images.first.image.url }}" class="card-img-top" alt="{{ property.title }}" style="height: 180px; object-fit: cover;">
+                                        {% endif %}
+                                        <div class="card-body">
+                                            <h5 class="card-title">{{ property.title }}</h5>
+                                            <p class="card-text">
+                                                <i class="fas fa-map-marker-alt"></i> {{ property.city }}, {{ property.state }}
+                                                <br>
+                                                <i class="fas fa-bed"></i> {{ property.bedrooms }} Bedrooms
+                                                <br>
+                                                <i class="fas fa-dollar-sign"></i> {{ property.price }}/month
+                                            </p>
+                                        </div>
+                                        <div class="card-footer bg-transparent">
+                                            <a href="{% url 'property_detail' property.pk %}" class="btn btn-sm btn-primary">View Details</a>
+                                            <button class="btn btn-sm btn-danger float-end toggle-favorite" data-property-id="{{ property.id }}">
+                                                <i class="fas fa-heart"></i> Remove
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        {% else %}
+                            <p>You haven't favorited any properties yet.</p>
+                            <a href="{% url 'property_list' %}" class="btn btn-primary">Browse Properties</a>
+                        {% endif %}
+                    </div>
+                </div>
+            {% endif %}
+
+            <!-- Appointments Section (Common for both user types) -->
+            <div class="card mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5>My Appointments</h5>
+                </div>
+                <div class="card-body">
+                    {% if appointments %}
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Property</th>
+                                        <th>Date</th>
+                                        <th>Time</th>
+                                        <th>Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for appointment in appointments %}
+                                    <tr>
+                                        <td>
+                                            <a href="{% url 'property_detail' appointment.property.pk %}">
+                                                {{ appointment.property.title|truncatechars:30 }}
+                                            </a>
+                                        </td>
+                                        <td>{{ appointment.requested_date|date:"M d, Y" }}</td>
+                                        <td>{{ appointment.requested_time|time:"g:i A" }}</td>
+                                        <td>
+                                            {% if appointment.status == 'pending' %}
+                                                <span class="badge bg-warning text-dark">Pending</span>
+                                            {% elif appointment.status == 'confirmed' %}
+                                                <span class="badge bg-success">Confirmed</span>
+                                            {% else %}
+                                                <span class="badge bg-danger">Declined</span>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <p>You don't have any appointments yet.</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Messages Section -->
+            <div class="card mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5>Recent Messages</h5>
+                </div>
+                <div class="card-body">
+                    {% if messages %}
+                        <div class="list-group">
+                            {% for message in messages %}
+                            <a href="#" class="list-group-item list-group-item-action">
+                                <div class="d-flex w-100 justify-content-between">
+                                    <h6 class="mb-1">
+                                        {% if request.user.user_type == 'landlord' %}
+                                            From: {{ message.sender.get_full_name|default:message.sender.username }}
+                                        {% else %}
+                                            To: {{ message.recipient.get_full_name|default:message.recipient.username }}
+                                        {% endif %}
+                                    </h6>
+                                    <small>{{ message.sent_at|timesince }} ago</small>
+                                </div>
+                                <p class="mb-1">{{ message.subject }}</p>
+                                <small>{{ message.body|truncatechars:50 }}</small>
+                            </a>
+                            {% endfor %}
+                        </div>
+                        <a href="#" class="btn btn-outline-primary mt-3">View All Messages</a>
+                    {% else %}
+                        <p>You don't have any messages yet.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- JavaScript for favorite toggling -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Favorite toggle functionality
+    document.querySelectorAll('.toggle-favorite').forEach(button => {
+        button.addEventListener('click', function() {
+            const propertyId = this.dataset.propertyId;
+            const url = `/property/${propertyId}/toggle-favorite/`;
+            
+            fetch(url, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': '{{ csrf_token }}',
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json'
+                },
+                credentials: 'same-origin'
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.is_favorite) {
+                    this.innerHTML = '<i class="fas fa-heart"></i> Remove';
+                    this.classList.remove('btn-outline-danger');
+                    this.classList.add('btn-danger');
+                } else {
+                    // Remove the card from view if unfavorited
+                    this.closest('.col-md-6').remove();
+                    
+                    // Show message if no favorites left
+                    if (document.querySelectorAll('.toggle-favorite').length === 0) {
+                        const favoritesContainer = document.querySelector('.card-body');
+                        favoritesContainer.innerHTML = `
+                            <p>You haven't favorited any properties yet.</p>
+                            <a href="{% url 'property_list' %}" class="btn btn-primary">Browse Properties</a>
+                        `;
+                    }
+                }
+            });
+        });
+    });
+});
+</script>
+
+{% endblock %}

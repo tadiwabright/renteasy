@@ -1,0 +1,17 @@
+<!-- templates/share.html -->
+<div class="share-container">
+  <h3>Share this property</h3>
+  <div class="input-group">
+    <input type="text" value="{{ share_url }}" id="share-url" readonly>
+    <button onclick="copyToClipboard()">Copy</button>
+  </div>
+</div>
+
+<script>
+function copyToClipboard() {
+  const copyText = document.getElementById("share-url");
+  copyText.select();
+  document.execCommand("copy");
+  alert("Copied to clipboard!");
+}
+</script>

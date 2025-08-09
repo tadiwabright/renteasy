@@ -1,0 +1,176 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Available Properties{% endblock %}
+
+{% block content %}
+<!-- Main banner START -->
+<section class="position-relative py-8 py-sm-9" style="background-image:url({% static 'assets/images/category/hotel/resort/bg-01.jpg' %}); background-position: center left; background-size: cover;">
+    <div class="bg-overlay bg-dark opacity-2"></div>
+    <div class="container z-index-9 position-relative">
+        <div class="row">
+            <div class="col-xl-8 m-auto text-center py-xl-8">
+                <h1 class="display-4 text-white mb-3">Find Your Perfect Rental</h1>
+                <h5 class="text-white mb-3">Discover properties that match your lifestyle.</h5>
+                {% if user.is_authenticated %}
+                    <a href="{% url 'property_create' %}" class="btn btn-lg btn-dark mb-0">List Your Property</a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</section>
+<!-- Main banner END -->
+
+<!-- Property listings START -->
+<section class="pt-5 pt-md-8">
+    <div class="container">
+        <!-- Search filters -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card shadow-sm">
+                    <div class="card-body">
+                        <form method="get" class="row g-3">
+                            <div class="col-md-4">
+                                <label class="form-label">Location</label>
+                                <input type="text" name="location" class="form-control" placeholder="City or Neighborhood">
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label">Property Type</label>
+                                <select name="property_type" class="form-select">
+                                    <option value="">Any Type</option>
+                                    <option value="apartment">Apartment</option>
+                                    <option value="house">House</option>
+                                    <option value="condo">Condo</option>
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label">Price Range</label>
+                                <select name="price_range" class="form-select">
+                                    <option value="">Any Price</option>
+                                    <option value="0-1000">$0 - $1000</option>
+                                    <option value="1000-2000">$1000 - $2000</option>
+                                    <option value="2000+">$2000+</option>
+                                </select>
+                            </div>
+                            <div class="col-md-2 d-flex align-items-end">
+                                <button type="submit" class="btn btn-primary w-100">Search</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Property grid -->
+        <div class="row g-4">
+            {% for property in properties %}
+            <div class="col-sm-6 col-lg-4 col-xl-3">
+                <div class="card shadow-sm h-100">
+                    <!-- Favorite button -->
+                    <div class="position-absolute top-0 end-0 p-3 z-index-9">
+                        <button class="btn btn-sm btn-light rounded-circle" onclick="toggleFavorite({{ property.id }})">
+                            <i class="bi {% if property in request.user.favorites.all %}bi-heart-fill text-danger{% else %}bi-heart{% endif %}"></i>
+                        </button>
+                    </div>
+                    
+                    <!-- Image -->
+                    <img src="{{ property.main_image.url }}" class="card-img-top" alt="{{ property.title }}">
+                    
+                    <!-- Badge -->
+                    <div class="position-absolute top-0 start-0 m-3">
+                        <span class="badge bg-success">{{ property.get_property_type_display }}</span>
+                    </div>
+                    
+                    <!-- Card body -->
+                    <div class="card-body pb-0">
+                        <h5 class="card-title"><a href="{% url 'property_detail' property.id %}">{{ property.title }}</a></h5>
+                        <p class="card-text text-body-secondary">{{ property.address }}</p>
+                        
+                        <!-- Features -->
+                        <ul class="list-inline hstack gap-3 mb-3">
+                            <li class="list-inline-item"><i class="bi bi-house-door me-1"></i> {{ property.bedrooms }} beds</li>
+                            <li class="list-inline-item"><i class="bi bi-droplet me-1"></i> {{ property.bathrooms }} baths</li>
+                            <li class="list-inline-item"><i class="bi bi-arrows-angle-contract me-1"></i> {{ property.square_feet }} sqft</li>
+                        </ul>
+                    </div>
+                    
+                    <!-- Card footer -->
+                    <div class="card-footer pt-0 border-0 bg-transparent">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <h5 class="mb-0">${{ property.price }}/mo</h5>
+                            <a href="{% url 'property_detail' property.id %}" class="btn btn-sm btn-dark mb-0">View Details</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% empty %}
+            <div class="col-12 text-center py-5">
+                <h4>No properties found matching your criteria.</h4>
+                <p>Try adjusting your search filters.</p>
+            </div>
+            {% endfor %}
+        </div>
+        
+        <!-- Pagination -->
+        {% if is_paginated %}
+        <div class="row mt-5">
+            <div class="col-12">
+                <nav aria-label="Page navigation">
+                    <ul class="pagination justify-content-center">
+                        {% if page_obj.has_previous %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ page_obj.previous_page_number }}" aria-label="Previous">
+                                    <span aria-hidden="true">&laquo;</span>
+                                </a>
+                            </li>
+                        {% endif %}
+                        
+                        {% for num in page_obj.paginator.page_range %}
+                            {% if page_obj.number == num %}
+                                <li class="page-item active"><a class="page-link" href="#">{{ num }}</a></li>
+                            {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                                <li class="page-item"><a class="page-link" href="?page={{ num }}">{{ num }}</a></li>
+                            {% endif %}
+                        {% endfor %}
+                        
+                        {% if page_obj.has_next %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ page_obj.next_page_number }}" aria-label="Next">
+                                    <span aria-hidden="true">&raquo;</span>
+                                </a>
+                            </li>
+                        {% endif %}
+                    </ul>
+                </nav>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</section>
+<!-- Property listings END -->
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function toggleFavorite(propertyId) {
+    fetch(`/property/${propertyId}/toggle-favorite/`, {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': '{{ csrf_token }}',
+            'Content-Type': 'application/json',
+        },
+        credentials: 'same-origin'
+    })
+    .then(response => response.json())
+    .then(data => {
+        if(data.status === 'added') {
+            // Update heart icon
+            document.querySelector(`button[onclick="toggleFavorite(${propertyId})"] i`).className = 'bi bi-heart-fill text-danger';
+        } else {
+            // Update heart icon
+            document.querySelector(`button[onclick="toggleFavorite(${propertyId})"] i`).className = 'bi bi-heart';
+        }
+    });
+}
+</script>
+{% endblock %}

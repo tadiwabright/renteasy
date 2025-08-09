@@ -1,0 +1,179 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Rental Agreement - {{ agreement.property.title }}{% endblock %}
+
+{% block content %}
+<div class="container py-8 py-sm-10">
+    <div class="row">
+        <div class="col-lg-8 mx-auto">
+            <div class="card shadow">
+                <div class="card-body p-5">
+                    <h2 class="mb-4">Rental Agreement for {{ agreement.property.title }}</h2>
+                    
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <h5>Landlord</h5>
+                            <p>{{ agreement.landlord.get_full_name }}</p>
+                        </div>
+                        <div class="col-md-6">
+                            <h5>Tenant</h5>
+                            <p>{{ agreement.tenant.get_full_name }}</p>
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <h5>Duration</h5>
+                            <p>{{ agreement.start_date|date:"F j, Y" }} to {{ agreement.end_date|date:"F j, Y" }}</p>
+                        </div>
+                        <div class="col-md-6">
+                            <h5>Monthly Rent</h5>
+                            <p>${{ agreement.monthly_rent }}</p>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <h5>Terms</h5>
+                        <div class="border p-3">{{ agreement.terms|linebreaks }}</div>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <h5>Status</h5>
+                        <p class="badge bg-{% if agreement.status == 'active' %}success{% elif agreement.status == 'pending' %}warning{% else %}secondary{% endif %}">
+                            {{ agreement.get_status_display }}
+                        </p>
+                        
+                        {% if not agreement.signed_by_landlord and request.user == agreement.landlord %}
+                            <a href="{% url 'sign_agreement' agreement.pk %}" class="btn btn-primary">Sign as Landlord</a>
+                        {% endif %}
+                        
+                        {% if not agreement.signed_by_tenant and request.user == agreement.tenant %}
+                            <a href="{% url 'sign_agreement' agreement.pk %}" class="btn btn-primary">Sign as Tenant</a>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Payments Section -->
+                    <div class="mt-5">
+                        <h3 class="mb-4">Payments</h3>
+                        
+                        {% if agreement.payments.all %}
+                            <div class="table-responsive">
+                                <table class="table">
+                                    <thead>
+                                        <tr>
+                                            <th>Date</th>
+                                            <th>Amount</th>
+                                            <th>Status</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for payment in agreement.payments.all %}
+                                        <tr>
+                                            <td>{{ payment.payment_date|date:"F j, Y" }}</td>
+                                            <td>${{ payment.amount }}</td>
+                                            <td>
+                                                <span class="badge bg-{% if payment.status == 'completed' %}success{% elif payment.status == 'pending' %}warning{% else %}danger{% endif %}">
+                                                    {{ payment.get_status_display }}
+                                                </span>
+                                            </td>
+                                            <td>
+                                                {% if payment.status == 'pending' and request.user == agreement.tenant %}
+                                                    <button class="btn btn-sm btn-primary pay-button" 
+                                                            data-payment-id="{{ payment.pk }}"
+                                                            data-amount="{{ payment.amount }}"
+                                                            data-public-key="{{ stripe_public_key }}">
+                                                        Pay Now
+                                                    </button>
+                                                {% endif %}
+                                            </td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        {% else %}
+                            <p>No payments yet.</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Payment Modal -->
+<div class="modal fade" id="paymentModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Make Payment</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="payment-form">
+                    <div id="payment-element"></div>
+                    <div id="payment-message" class="hidden"></div>
+                    <button id="submit" class="btn btn-primary mt-3">Pay Now</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://js.stripe.com/v3/"></script>
+<script>
+$(document).ready(function() {
+    let stripe;
+    let elements;
+    let paymentId;
+    
+    $('.pay-button').click(function() {
+        paymentId = $(this).data('payment-id');
+        const amount = $(this).data('amount');
+        const publicKey = $(this).data('public-key');
+        
+        stripe = Stripe(publicKey);
+        initializePayment(paymentId);
+        $('#paymentModal').modal('show');
+    });
+    
+    async function initializePayment(paymentId) {
+        const response = await fetch(`/payments/${paymentId}/create-intent/`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token }}'
+            }
+        });
+        
+        const {clientSecret} = await response.json();
+        
+        elements = stripe.elements({clientSecret});
+        const paymentElement = elements.create('payment');
+        paymentElement.mount('#payment-element');
+        
+        const form = document.getElementById('payment-form');
+        form.addEventListener('submit', async (event) => {
+            event.preventDefault();
+            
+            const {error} = await stripe.confirmPayment({
+                elements,
+                confirmParams: {
+                    return_url: `${window.location.origin}/payments/${paymentId}/success/`,
+                },
+            });
+            
+            if (error) {
+                const messageElement = document.getElementById('payment-message');
+                messageElement.textContent = error.message;
+                messageElement.classList.remove('hidden');
+            }
+        });
+    }
+});
+</script>
+{% endblock %}

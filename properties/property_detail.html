@@ -1,0 +1,304 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ property.title }}{% endblock %}
+
+{% block content %}
+<!-- Property detail START -->
+<section class="pt-5 pt-md-8">
+    <div class="container">
+        <div class="row">
+            <!-- Main content -->
+            <div class="col-lg-8">
+                <!-- Property images slider -->
+                <div class="tiny-slider arrow-round arrow-blur rounded-3 overflow-hidden">
+                    <div class="tiny-slider-inner" data-autoplay="false" data-arrow="true" data-dots="true">
+                        {% for image in property.images.all %}
+                        <div>
+                            <img src="{{ image.image.url }}" class="w-100 rounded-3" alt="Property image">
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                
+                <!-- Property info -->
+                <div class="card shadow-sm mt-4">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h1 class="h3 mb-0">{{ property.title }}</h1>
+                            <h4 class="mb-0 text-primary">${{ property.price }}/mo</h4>
+                        </div>
+                        
+                        <!-- Address -->
+                        <p class="text-body-secondary mb-4">
+                            <i class="bi bi-geo-alt-fill me-2"></i>{{ property.address }}
+                        </p>
+                        
+                        <!-- Features -->
+                        <div class="row g-4 mb-4">
+                            <div class="col-6 col-md-3">
+                                <div class="text-center p-3 bg-light rounded-2">
+                                    <i class="bi bi-house-door fs-4 text-primary mb-2"></i>
+                                    <h6 class="mb-0">{{ property.bedrooms }} Bedrooms</h6>
+                                </div>
+                            </div>
+                            <div class="col-6 col-md-3">
+                                <div class="text-center p-3 bg-light rounded-2">
+                                    <i class="bi bi-droplet fs-4 text-primary mb-2"></i>
+                                    <h6 class="mb-0">{{ property.bathrooms }} Bathrooms</h6>
+                                </div>
+                            </div>
+                            <div class="col-6 col-md-3">
+                                <div class="text-center p-3 bg-light rounded-2">
+                                    <i class="bi bi-arrows-angle-contract fs-4 text-primary mb-2"></i>
+                                    <h6 class="mb-0">{{ property.square_feet }} sqft</h6>
+                                </div>
+                            </div>
+                            <div class="col-6 col-md-3">
+                                <div class="text-center p-3 bg-light rounded-2">
+                                    <i class="bi bi-building fs-4 text-primary mb-2"></i>
+                                    <h6 class="mb-0">{{ property.get_property_type_display }}</h6>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Description -->
+                        <h4 class="mb-3">Description</h4>
+                        <p>{{ property.description }}</p>
+                        
+                        <!-- Amenities -->
+                        <h4 class="mb-3 mt-5">Amenities</h4>
+                        <div class="row g-3">
+                            {% for amenity in property.amenities.all %}
+                            <div class="col-6 col-md-4">
+                                <div class="d-flex align-items-center">
+                                    <i class="bi bi-check-circle-fill text-success me-2"></i>
+                                    <span>{{ amenity.name }}</span>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Map -->
+                <div class="card shadow-sm mt-4">
+                    <div class="card-body">
+                        <h4 class="mb-3">Location</h4>
+                        <div id="propertyMap" style="height: 300px; width: 100%;" class="rounded-3"></div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Sidebar -->
+            <div class="col-lg-4 mt-5 mt-lg-0">
+                <!-- Contact form -->
+                <div class="card shadow-sm sticky-top" style="top: 100px;">
+                    <div class="card-body">
+                        <h4 class="mb-4">Contact Owner</h4>
+                        <form method="post" action="{% url 'message_create' %}">
+                            {% csrf_token %}
+                            <input type="hidden" name="property" value="{{ property.id }}">
+                            
+                            <div class="mb-3">
+                                <label class="form-label">Your Name</label>
+                                <input type="text" name="name" class="form-control" required>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label class="form-label">Email</label>
+                                <input type="email" name="email" class="form-control" required>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label class="form-label">Phone</label>
+                                <input type="tel" name="phone" class="form-control">
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label class="form-label">Message</label>
+                                <textarea name="message" class="form-control" rows="4" required>I'm interested in your property at {{ property.address }}. Please contact me with more details.</textarea>
+                            </div>
+                            
+                            <button type="submit" class="btn btn-primary w-100">Send Message</button>
+                        </form>
+                    </div>
+                </div>
+                
+                <!-- Schedule tour -->
+                <div class="card shadow-sm mt-4">
+                    <div class="card-body">
+                        <h4 class="mb-4">Schedule a Tour</h4>
+                        <form method="post" action="{% url 'appointment_create' %}">
+                            {% csrf_token %}
+                            <input type="hidden" name="property" value="{{ property.id }}">
+                            
+                            <div class="mb-3">
+                                <label class="form-label">Date</label>
+                                <input type="date" name="date" class="form-control" required>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label class="form-label">Time</label>
+                                <select name="time" class="form-select" required>
+                                    <option value="">Select time</option>
+                                    <option value="09:00">9:00 AM</option>
+                                    <option value="10:00">10:00 AM</option>
+                                    <option value="11:00">11:00 AM</option>
+                                    <option value="12:00">12:00 PM</option>
+                                    <option value="13:00">1:00 PM</option>
+                                    <option value="14:00">2:00 PM</option>
+                                    <option value="15:00">3:00 PM</option>
+                                    <option value="16:00">4:00 PM</option>
+                                </select>
+                            </div>
+                            
+                            <button type="submit" class="btn btn-outline-primary w-100">Request Tour</button>
+                        </form>
+                    </div>
+                </div>
+                
+                <!-- Share property -->
+                <div class="card shadow-sm mt-4">
+                    <div class="card-body">
+                        <h4 class="mb-3">Share This Property</h4>
+                        <div class="d-flex justify-content-between">
+                            <a href="#" class="btn btn-sm btn-facebook">
+                                <i class="fab fa-facebook-f me-1"></i> Facebook
+                            </a>
+                            <a href="#" class="btn btn-sm btn-twitter">
+                                <i class="fab fa-twitter me-1"></i> Twitter
+                            </a>
+                            <a href="mailto:?subject=Check%20out%20this%20property&amp;body={{ request.build_absolute_uri }}" class="btn btn-sm btn-light">
+                                <i class="bi bi-envelope me-1"></i> Email
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Reviews -->
+        <div class="row mt-5">
+            <div class="col-12">
+                <div class="card shadow-sm">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center mb-4">
+                            <h4 class="mb-0">Reviews</h4>
+                            <button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#reviewModal">
+                                Write a Review
+                            </button>
+                        </div>
+                        
+                        {% for review in property.reviews.all %}
+                        <div class="mb-4 pb-4 border-bottom">
+                            <div class="d-flex align-items-center mb-2">
+                                <div class="avatar avatar-sm me-2">
+                                    <img src="{{ review.user.profile.avatar.url|default:'/static/assets/images/avatar/placeholder.jpg' }}" class="avatar-img rounded-circle" alt="Avatar">
+                                </div>
+                                <div>
+                                    <h6 class="mb-0">{{ review.user.get_full_name }}</h6>
+                                    <small class="text-body-secondary">{{ review.created_at|date:"F Y" }}</small>
+                                </div>
+                            </div>
+                            
+                            <div class="mb-2">
+                                {% for i in "12345" %}
+                                    <i class="bi bi-star-fill {% if forloop.counter <= review.rating %}text-warning{% else %}text-secondary{% endif %}"></i>
+                                {% endfor %}
+                            </div>
+                            
+                            <p class="mb-0">{{ review.comment }}</p>
+                        </div>
+                        {% empty %}
+                        <p class="text-body-secondary">No reviews yet. Be the first to review!</p>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+<!-- Property detail END -->
+
+<!-- Review Modal -->
+<div class="modal fade" id="reviewModal" tabindex="-1" aria-labelledby="reviewModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="reviewModalLabel">Write a Review</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form method="post" action="{% url 'review_create' %}">
+                <div class="modal-body">
+                    {% csrf_token %}
+                    <input type="hidden" name="property" value="{{ property.id }}">
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Rating</label>
+                        <div class="rating-input">
+                            {% for i in "54321" %}
+                                <input type="radio" id="star{{ i }}" name="rating" value="{{ i }}" required>
+                                <label for="star{{ i }}"><i class="bi bi-star-fill"></i></label>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Review</label>
+                        <textarea name="comment" class="form-control" rows="5" required></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="submit" class="btn btn-primary">Submit Review</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Initialize map
+function initMap() {
+    const location = { lat: {{ property.latitude }}, lng: {{ property.longitude }} };
+    const map = new google.maps.Map(document.getElementById("propertyMap"), {
+        zoom: 15,
+        center: location,
+    });
+    new google.maps.Marker({
+        position: location,
+        map: map,
+    });
+}
+</script>
+<script src="https://maps.googleapis.com/maps/api/js?key=YOUR_API_KEY&callback=initMap" async defer></script>
+
+<style>
+.rating-input {
+    display: flex;
+    flex-direction: row-reverse;
+    justify-content: flex-end;
+}
+.rating-input input {
+    display: none;
+}
+.rating-input label {
+    color: #ddd;
+    font-size: 1.5rem;
+    padding: 0 0.2rem;
+    cursor: pointer;
+}
+.rating-input input:checked ~ label,
+.rating-input input:hover ~ label {
+    color: #ffc107;
+}
+.rating-input input:checked + label:hover,
+.rating-input input:checked ~ label:hover,
+.rating-input label:hover ~ input:checked ~ label {
+    color: #ffc107;
+}
+</style>
+{% endblock %}

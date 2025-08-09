@@ -1,0 +1,103 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row">
+        <div class="col-lg-8 mx-auto">
+            <div class="card shadow-sm">
+                <div class="card-header bg-white">
+                    <h4 class="mb-0">Edit Profile</h4>
+                </div>
+                <div class="card-body">
+                    <form method="post" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        
+                        <div class="row mb-4">
+                            <div class="col-md-4 text-center">
+                                <div class="avatar-upload mb-3">
+                                    {% if user.profile_picture %}
+                                    <img id="avatar-preview" src="{{ user.profile_picture.url }}" class="rounded-circle" width="150" height="150" alt="Profile Picture">
+                                    {% else %}
+                                    <div id="avatar-preview" class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center mx-auto" style="width: 150px; height: 150px; font-size: 3.5rem;">
+                                        {{ user.username|first|upper }}
+                                    </div>
+                                    {% endif %}
+                                </div>
+                                <div class="mb-3">
+                                    <input type="file" class="form-control" id="id_profile_picture" name="profile_picture" accept="image/*">
+                                    <div class="form-text">Max. 2MB (JPG, PNG)</div>
+                                </div>
+                            </div>
+                            <div class="col-md-8">
+                                <div class="row g-3">
+                                    <div class="col-md-6">
+                                        <label for="id_first_name" class="form-label">First Name</label>
+                                        {{ form.first_name }}
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label for="id_last_name" class="form-label">Last Name</label>
+                                        {{ form.last_name }}
+                                    </div>
+                                    <div class="col-12">
+                                        <label for="id_email" class="form-label">Email</label>
+                                        {{ form.email }}
+                                    </div>
+                                    <div class="col-12">
+                                        <label for="id_phone_number" class="form-label">Phone Number</label>
+                                        {{ form.phone_number }}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="id_about" class="form-label">About Me</label>
+                            {{ form.about }}
+                            <div class="form-text">Tell others about yourself</div>
+                        </div>
+
+                        <div class="d-flex justify-content-between">
+                            <a href="{% url 'profile' %}" class="btn btn-outline-secondary">Cancel</a>
+                            <button type="submit" class="btn btn-primary">Save Changes</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Preview profile picture before upload
+    const profilePictureInput = document.getElementById('id_profile_picture');
+    const avatarPreview = document.getElementById('avatar-preview');
+    
+    profilePictureInput.addEventListener('change', function(event) {
+        const file = event.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                if (avatarPreview.tagName === 'IMG') {
+                    avatarPreview.src = e.target.result;
+                } else {
+                    // Replace the div with an img element
+                    const newImg = document.createElement('img');
+                    newImg.id = 'avatar-preview';
+                    newImg.className = 'rounded-circle';
+                    newImg.width = 150;
+                    newImg.height = 150;
+                    newImg.src = e.target.result;
+                    newImg.alt = 'Profile Preview';
+                    avatarPreview.parentNode.replaceChild(newImg, avatarPreview);
+                }
+            }
+            reader.readAsDataURL(file);
+        }
+    });
+});
+</script>
+{% endblock %}

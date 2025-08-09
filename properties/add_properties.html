@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+
+{% block title %}Add Property - Tenant Network{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h2 class="h4 mb-0">Add New Property</h2>
+                </div>
+                <div class="card-body">
+                    <form method="post" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        
+                        <h4 class="mb-3">Property Details</h4>
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                {{ property_form.title.label_tag }}
+                                {{ property_form.title }}
+                                {{ property_form.title.errors }}
+                            </div>
+                            <div class="col-md-6">
+                                {{ property_form.property_type.label_tag }}
+                                {{ property_form.property_type }}
+                                {{ property_form.property_type.errors }}
+                            </div>
+                            <div class="col-12">
+                                {{ property_form.description.label_tag }}
+                                {{ property_form.description }}
+                                {{ property_form.description.errors }}
+                            </div>
+                            <div class="col-md-4">
+                                {{ property_form.price.label_tag }}
+                                <div class="input-group">
+                                    <span class="input-group-text">$</span>
+                                    {{ property_form.price }}
+                                </div>
+                                {{ property_form.price.errors }}
+                            </div>
+                            <div class="col-md-4">
+                                {{ property_form.bedrooms.label_tag }}
+                                {{ property_form.bedrooms }}
+                                {{ property_form.bedrooms.errors }}
+                            </div>
+                            <div class="col-md-4">
+                                {{ property_form.bathrooms.label_tag }}
+                                {{ property_form.bathrooms }}
+                                {{ property_form.bathrooms.errors }}
+                            </div>
+                            <div class="col-md-6">
+                                {{ property_form.location.label_tag }}
+                                {{ property_form.location }}
+                                {{ property_form.location.errors }}
+                            </div>
+                            <div class="col-md-6">
+                                {{ property_form.address.label_tag }}
+                                {{ property_form.address }}
+                                {{ property_form.address.errors }}
+                            </div>
+                            
+                        </div>
+                        
+                        <hr class="my-4">
+                        
+                        <h4 class="mb-3">Property Images</h4>
+                        {{ image_form.images.label_tag }}
+                        {{ image_form.images }}
+                        {{ image_form.images.errors }}
+                        <div class="form-text">Upload multiple images of your property</div>
+                        
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-4">
+                            <button type="submit" class="btn btn-primary px-4">
+                                <i class="fas fa-save me-2"></i>Save Property
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

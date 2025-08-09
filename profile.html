@@ -1,0 +1,168 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row">
+        <!-- Sidebar Navigation -->
+        <div class="col-lg-3 mb-4">
+            <div class="card shadow-sm">
+                <div class="card-body text-center">
+                    <div class="avatar-profile mb-3">
+                        {% if user.profile_picture %}
+                        <img src="{{ user.profile_picture.url }}" class="rounded-circle" width="120" height="120" alt="Profile Picture">
+                        {% else %}
+                        <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center mx-auto" style="width: 120px; height: 120px; font-size: 3rem;">
+                            {{ user.username|first|upper }}
+                        </div>
+                        {% endif %}
+                    </div>
+                    <h5 class="mb-1">{{ user.get_full_name|default:user.username }}</h5>
+                    <p class="text-muted mb-3">
+                        <span class="badge bg-{% if user.user_type == 'landlord' %}primary{% else %}success{% endif %}">
+                            {{ user.get_user_type_display }}
+                        </span>
+                    </p>
+                    <hr>
+                    <ul class="nav flex-column">
+                        <li class="nav-item">
+                            <a class="nav-link active" href="{% url 'profile' %}">
+                                <i class="bi bi-person me-2"></i> Profile
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'profile_update' %}">
+                                <i class="bi bi-pencil me-2"></i> Edit Profile
+                            </a>
+                        </li>
+                        {% if user.user_type == 'landlord' %}
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'property_create' %}">
+                                <i class="bi bi-plus-circle me-2"></i> Add Property
+                            </a>
+                        </li>
+                        {% endif %}
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'dashboard' %}">
+                                <i class="bi bi-speedometer2 me-2"></i> Dashboard
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'logout' %}">
+                                <i class="bi bi-box-arrow-right me-2"></i> Logout
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Profile Content -->
+        <div class="col-lg-9">
+            <div class="card shadow-sm">
+                <div class="card-header bg-white">
+                    <h4 class="mb-0">My Profile</h4>
+                </div>
+                <div class="card-body">
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <h5 class="text-primary">Personal Information</h5>
+                            <dl class="row">
+                                <dt class="col-sm-4">Full Name</dt>
+                                <dd class="col-sm-8">{{ user.get_full_name|default:"Not provided" }}</dd>
+
+                                <dt class="col-sm-4">Username</dt>
+                                <dd class="col-sm-8">{{ user.username }}</dd>
+
+                                <dt class="col-sm-4">Email</dt>
+                                <dd class="col-sm-8">{{ user.email|default:"Not provided" }}</dd>
+
+                                <dt class="col-sm-4">Phone</dt>
+                                <dd class="col-sm-8">{{ user.phone_number|default:"Not provided" }}</dd>
+
+                                <dt class="col-sm-4">Account Type</dt>
+                                <dd class="col-sm-8">
+                                    <span class="badge bg-{% if user.user_type == 'landlord' %}primary{% else %}success{% endif %}">
+                                        {{ user.get_user_type_display }}
+                                    </span>
+                                </dd>
+                            </dl>
+                        </div>
+                        <div class="col-md-6">
+                            <h5 class="text-primary">Verification Status</h5>
+                            <div class="d-flex align-items-center mb-3">
+                                <div class="me-3">
+                                    <i class="bi bi-{% if user.is_verified %}shield-check text-success{% else %}shield-exclamation text-warning{% endif %} fs-3"></i>
+                                </div>
+                                <div>
+                                    <h6 class="mb-1">Account Verification</h6>
+                                    <p class="mb-0 text-muted">
+                                        {% if user.is_verified %}
+                                        Your account is verified
+                                        {% else %}
+                                        Your account is not verified
+                                        {% endif %}
+                                    </p>
+                                </div>
+                            </div>
+                            {% if not user.is_verified %}
+                            <a href="#" class="btn btn-sm btn-outline-primary">Verify Account</a>
+                            {% endif %}
+
+                            <div class="mt-4">
+                                <h6 class="text-primary">About Me</h6>
+                                <p class="text-muted">
+                                    {% if user.about %}
+                                    {{ user.about }}
+                                    {% else %}
+                                    No information provided yet.
+                                    {% endif %}
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    {% if user.user_type == 'landlord' %}
+                    <hr>
+                    <h5 class="text-primary mb-3">My Properties</h5>
+                    <div class="row">
+                        {% for property in user.properties.all|slice:":3" %}
+                        <div class="col-md-4 mb-3">
+                            <div class="card h-100 border-0 shadow-sm">
+                                {% if property.images.first %}
+                                <img src="{{ property.images.first.image.url }}" class="card-img-top" alt="{{ property.title }}" style="height: 120px; object-fit: cover;">
+                                {% else %}
+                                <img src="{% static 'images/default-property.jpg' %}" class="card-img-top" alt="Default property" style="height: 120px; object-fit: cover;">
+                                {% endif %}
+                                <div class="card-body">
+                                    <h6 class="card-title">{{ property.title|truncatechars:20 }}</h6>
+                                    <p class="card-text text-muted small">
+                                        <i class="bi bi-geo-alt-fill"></i> {{ property.city }}
+                                    </p>
+                                    <div class="d-flex justify-content-between">
+                                        <span class="badge bg-{% if property.is_active %}success{% else %}secondary{% endif %}">
+                                            {% if property.is_active %}Active{% else %}Inactive{% endif %}
+                                        </span>
+                                        <a href="{% url 'property_detail' property.id %}" class="btn btn-sm btn-outline-primary">View</a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% empty %}
+                        <div class="col-12">
+                            <div class="alert alert-info">You haven't listed any properties yet.</div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% if user.properties.count > 3 %}
+                    <div class="text-end mt-3">
+                        <a href="{% url 'dashboard' %}" class="btn btn-sm btn-outline-primary">View All Properties</a>
+                    </div>
+                    {% endif %}
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,25 @@
+{% extends "base_site.html" %}
+
+{% block content %}
+<div class="module">
+    <h2>User Statistics</h2>
+    <table>
+        <tr>
+            <th>Total Users</th>
+            <td>{{ total }}</td>
+        </tr>
+        <tr>
+            <th>Landlords</th>
+            <td>{{ landlords }}</td>
+        </tr>
+        <tr>
+            <th>Tenants</th>
+            <td>{{ tenants }}</td>
+        </tr>
+        <tr>
+            <th>Verified Users</th>
+            <td>{{ verified }}</td>
+        </tr>
+    </table>
+</div>
+{% endblock %}

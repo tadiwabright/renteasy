@@ -1,0 +1,236 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ property.title }}{% endblock %}
+
+{% block content %}
+<!-- Main banner START -->
+<section class="position-relative py-8 py-sm-9" style="background-image:url({% if property.main_image %}{{ property.main_image.image.url }}{% else %}{% static 'images/category/hotel/resort/bg-01.jpg' %}{% endif %}); background-position: center left; background-size: cover;">
+    <!-- Background dark overlay -->
+    <div class="bg-overlay bg-dark opacity-2"></div>
+    <div class="container z-index-9 position-relative">
+        <div class="row">
+            <div class="col-xl-8 m-auto text-center py-xl-8">
+                <h1 class="display-4 text-white mb-3">{{ property.title }}</h1>
+                <h5 class="text-white mb-3">{{ property.city }}, {{ property.state }}</h5>
+                <a href="#booking" class="btn btn-lg btn-dark mb-0">Book Now</a>
+            </div>
+        </div>
+    </div>
+</section>
+<!-- Main banner END -->
+
+<!-- About Property START -->
+<section class="pt-5 pt-md-8 pb-0">
+    <div class="container z-index-9">
+        <div class="row">
+            <div class="col-lg-10 m-auto text-center">
+                <h2>{{ property.title }}</h2>
+                <p class="lead">{{ property.description }}</p>
+                
+                <!-- Property Details -->
+                <ul class="list-inline hstack gap-4 flex-wrap justify-content-center mt-4">
+                    <li class="list-inline-item">
+                        <h5 class="mb-0 fw-normal"><i class="bi bi-door-open fa-fw text-primary me-1"></i>{{ property.bedrooms }} Bedrooms</h5>
+                    </li>
+                    <li class="list-inline-item"> 
+                        <h5 class="mb-0 fw-normal"><i class="bi bi-bathtub fa-fw text-primary me-1"></i>{{ property.bathrooms }} Bathrooms</h5>
+                    </li>
+                    <li class="list-inline-item">
+                        <h5 class="mb-0 fw-normal"><i class="bi bi-arrows-angle-expand fa-fw text-primary me-1"></i>{{ property.sqft }} sqft</h5>
+                    </li>	
+                    <li class="list-inline-item"> 
+                        <h5 class="mb-0 fw-normal"><i class="bi bi-cash-coin fa-fw text-primary me-1"></i>${{ property.price }}/{{ property.get_rental_frequency_display }}</h5>
+                    </li>
+                </ul>
+
+                <!-- Favorite button -->
+                <div class="d-sm-flex justify-content-center align-items-center mt-4">
+                    <button class="btn btn-lg btn-dark mb-0 toggle-favorite" data-property-id="{{ property.id }}">
+                        {% if is_favorite %}
+                            <i class="bi bi-heart-fill text-danger"></i> Remove Favorite
+                        {% else %}
+                            <i class="bi bi-heart"></i> Add to Favorites
+                        {% endif %}
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Property Images START -->
+<section class="pt-5 pt-md-8">
+    <div class="container">
+        <div class="row g-4">
+            {% for image in property.images.all %}
+            <div class="col-md-4">
+                <a href="{{ image.image.url }}" class="glightbox">
+                    <img src="{{ image.image.url }}" class="rounded-3 w-100" alt="{{ image.caption|default:property.title }}">
+                </a>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+<!-- Property Videos START -->
+{% if property.videos.all %}
+<section class="pt-5 pt-md-8">
+    <div class="container">
+        <h2 class="mb-4">Property Walkthrough</h2>
+        <div class="row g-4">
+            {% for video in property.videos.all %}
+            <div class="col-md-6">
+                <video controls class="w-100 rounded-3">
+                    <source src="{{ video.video.url }}" type="video/mp4">
+                    Your browser does not support the video tag.
+                </video>
+                <h5 class="mt-2">{{ video.title }}</h5>
+                <p>{{ video.description }}</p>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endif %}
+
+<!-- Amenities START -->
+{% if property.amenities.all %}
+<section class="pt-5 pt-md-8">
+    <div class="container">
+        <h2 class="mb-4">Amenities</h2>
+        <div class="row g-4">
+            {% for amenity in property.amenities.all %}
+            <div class="col-sm-6 col-md-4 col-lg-3">
+                <div class="d-flex align-items-center">
+                    <div class="icon-lg bg-primary bg-opacity-10 text-primary rounded-circle flex-shrink-0">
+                        <i class="{{ amenity.amenity.icon|default:'bi bi-check-circle' }}"></i>
+                    </div>
+                    <h6 class="mb-0 ms-3">{{ amenity.amenity.name }}</h6>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endif %}
+
+<!-- Booking Form START -->
+<section class="pt-5 pt-md-8" id="booking">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 mx-auto">
+                <div class="card shadow">
+                    <div class="card-body p-5">
+                        <h3 class="mb-4">Book This Property</h3>
+                        
+                        <!-- Message Form -->
+                        <form method="post" action="{% url 'message_create' %}">
+                            {% csrf_token %}
+                            {{ message_form.as_p }}
+                            <button type="submit" class="btn btn-primary">Send Message</button>
+                        </form>
+                        
+                        <!-- Appointment Form -->
+                        <form method="post" action="{% url 'appointment_create' %}" class="mt-4">
+                            {% csrf_token %}
+                            {{ appointment_form.as_p }}
+                            <button type="submit" class="btn btn-primary">Request Appointment</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Reviews START -->
+{% if property.reviews.all %}
+<section class="pt-5 pt-md-8">
+    <div class="container">
+        <h2 class="mb-4">Reviews</h2>
+        <div class="row">
+            {% for review in property.reviews.all %}
+            <div class="col-md-6 mb-4">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between mb-3">
+                            <h5>{{ review.reviewer.get_full_name }}</h5>
+                            <div>
+                                {% for i in "12345" %}
+                                    {% if forloop.counter <= review.rating %}
+                                        <i class="fas fa-star text-warning"></i>
+                                    {% else %}
+                                        <i class="far fa-star text-warning"></i>
+                                    {% endif %}
+                                {% endfor %}
+                            </div>
+                        </div>
+                        <h6>{{ review.title }}</h6>
+                        <p>{{ review.content }}</p>
+                        <small class="text-muted">{{ review.created_at|date:"F j, Y" }}</small>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endif %}
+
+{% if request.user.is_authenticated and request.user != property.landlord %}
+<!-- Review Form START -->
+<section class="pt-5 pt-md-8">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 mx-auto">
+                <div class="card shadow">
+                    <div class="card-body p-5">
+                        <h3 class="mb-4">Write a Review</h3>
+                        <form method="post" action="{% url 'review_create' %}">
+                            {% csrf_token %}
+                            {{ review_form.as_p }}
+                            <button type="submit" class="btn btn-primary">Submit Review</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endif %}
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Favorite toggle
+document.querySelectorAll('.toggle-favorite').forEach(button => {
+    button.addEventListener('click', function() {
+        const propertyId = this.dataset.propertyId;
+        fetch(`/property/${propertyId}/toggle-favorite/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}',
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({})
+        })
+        .then(response => response.json())
+        .then(data => {
+            if(data.is_favorite) {
+                this.innerHTML = '<i class="bi bi-heart-fill text-danger"></i> Remove Favorite';
+            } else {
+                this.innerHTML = '<i class="bi bi-heart"></i> Add to Favorites';
+            }
+        });
+    });
+});
+
+// Initialize GLightbox
+const lightbox = GLightbox({
+    selector: '.glightbox'
+});
+</script>
+{% endblock %}

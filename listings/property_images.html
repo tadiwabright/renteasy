@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>Property Images</h1>
+        <a href="{% url 'property_detail' property.id %}" class="btn btn-outline-primary">Back to Property</a>
+    </div>
+    
+    <div class="card shadow-sm mb-4">
+        <div class="card-body">
+            <h5 class="card-title">Upload New Image</h5>
+            <form method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+                <div class="row">
+                    <div class="col-md-8 mb-3">
+                        <label for="id_image" class="form-label">Image*</label>
+                        {{ image_form.image }}
+                    </div>
+                    <div class="col-md-4 mb-3 d-flex align-items-end">
+                        <div class="form-check form-switch">
+                            {{ image_form.is_main }}
+                            <label class="form-check-label" for="id_is_main">Set as main image</label>
+                        </div>
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-primary">Upload Image</button>
+            </form>
+        </div>
+    </div>
+    
+    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+        {% for image in property.images.all %}
+        <div class="col">
+            <div class="card h-100">
+                <img src="{{ image.image.url }}" class="card-img-top" alt="Property image" style="height: 200px; object-fit: cover;">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <span class="badge bg-{% if image.is_main %}success{% else %}secondary{% endif %}">
+                            {% if image.is_main %}Main Image{% else %}Secondary{% endif %}
+                        </span>
+                        <div class="btn-group">
+                            <form method="post" action="{% url 'set_main_image' property.id image.id %}" class="me-2">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-sm btn-outline-primary" {% if image.is_main %}disabled{% endif %}>
+                                    Set as Main
+                                </button>
+                            </form>
+                            <form method="post" action="{% url 'delete_image' property.id image.id %}">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-sm btn-outline-danger">
+                                    Delete
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-12">
+            <div class="alert alert-info">No images uploaded yet.</div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

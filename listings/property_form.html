@@ -1,0 +1,151 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white border-0 py-3">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h2 class="h5 mb-0">
+                            <i class="bi bi-house-add-fill text-primary me-2"></i>
+                            {% if form.instance.pk %}Edit Property{% else %}Add New Property{% endif %}
+                        </h2>
+                        <a href="{% if form.instance.pk %}{% url 'property_detail' form.instance.pk %}{% else %}{% url 'property_list' %}{% endif %}" class="btn btn-sm btn-outline-secondary">
+                            <i class="bi bi-arrow-left me-1"></i> Cancel
+                        </a>
+                    </div>
+                </div>
+                <div class="card-body p-4">
+                    <form method="post" enctype="multipart/form-data" class="needs-validation" novalidate>
+                        {% csrf_token %}
+                        
+                        <!-- Basic Information -->
+                        <div class="mb-4">
+                            <h5 class="text-primary mb-3 pb-2 border-bottom"><i class="bi bi-info-circle me-2"></i>Basic Information</h5>
+                            <div class="row g-3">
+                                <div class="col-md-8">
+                                    <label for="id_title" class="form-label">Property Title*</label>
+                                    {{ form.title }}
+                                    <div class="invalid-feedback">Please provide a property title.</div>
+                                </div>
+                                <div class="col-md-4">
+                                    <label for="id_property_type" class="form-label">Type*</label>
+                                    {{ form.property_type }}
+                                    <div class="invalid-feedback">Please select a property type.</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Description -->
+                        <div class="mb-4">
+                            <h5 class="text-primary mb-3 pb-2 border-bottom"><i class="bi bi-text-paragraph me-2"></i>Description</h5>
+                            <label for="id_description" class="form-label">Detailed Description*</label>
+                            {{ form.description }}
+                            <div class="invalid-feedback">Please provide a detailed description.</div>
+                            <div class="form-text">Describe the property features, amenities, and neighborhood.</div>
+                        </div>
+                        
+                        <!-- Pricing -->
+                        <div class="mb-4">
+                            <h5 class="text-primary mb-3 pb-2 border-bottom"><i class="bi bi-currency-dollar me-2"></i>Pricing</h5>
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label for="id_price" class="form-label">Price*</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text">$</span>
+                                        {{ form.price }}
+                                    </div>
+                                    <div class="invalid-feedback">Please provide a valid price.</div>
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="id_rental_frequency" class="form-label">Frequency*</label>
+                                    {{ form.rental_frequency }}
+                                    <div class="invalid-feedback">Please select a rental frequency.</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Property Details -->
+                        <div class="mb-4">
+                            <h5 class="text-primary mb-3 pb-2 border-bottom"><i class="bi bi-columns-gap me-2"></i>Property Details</h5>
+                            <div class="row g-3">
+                                <div class="col-md-4">
+                                    <label for="id_bedrooms" class="form-label">Bedrooms*</label>
+                                    {{ form.bedrooms }}
+                                    <div class="invalid-feedback">Please provide the number of bedrooms.</div>
+                                </div>
+                                <div class="col-md-4">
+                                    <label for="id_bathrooms" class="form-label">Bathrooms*</label>
+                                    {{ form.bathrooms }}
+                                    <div class="invalid-feedback">Please provide the number of bathrooms.</div>
+                                </div>
+                                <div class="col-md-4">
+                                    <label for="id_sqft" class="form-label">Area (sqft)*</label>
+                                    {{ form.sqft }}
+                                    <div class="invalid-feedback">Please provide the area in square feet.</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Location -->
+                        <div class="mb-4">
+                            <h5 class="text-primary mb-3 pb-2 border-bottom"><i class="bi bi-geo-alt me-2"></i>Location</h5>
+                            <div class="mb-3">
+                                <label for="id_address" class="form-label">Full Address*</label>
+                                {{ form.address }}
+                                <div class="invalid-feedback">Please provide the full address.</div>
+                            </div>
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label for="id_city" class="form-label">City*</label>
+                                    {{ form.city }}
+                                    <div class="invalid-feedback">Please provide the city.</div>
+                                </div>
+                                <div class="col-md-3">
+                                    <label for="id_state" class="form-label">State*</label>
+                                    {{ form.state }}
+                                    <div class="invalid-feedback">Please provide the state.</div>
+                                </div>
+                                <div class="col-md-3">
+                                    <label for="id_zip_code" class="form-label">Zip Code*</label>
+                                    {{ form.zip_code }}
+                                    <div class="invalid-feedback">Please provide the zip code.</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="d-grid mt-4">
+                            <button type="submit" class="btn btn-primary py-2">
+                                <i class="bi bi-save-fill me-2"></i>
+                                {% if form.instance.pk %}Update Property{% else %}Add Property{% endif %}
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .card {
+        border-radius: 0.5rem;
+        overflow: hidden;
+    }
+    .form-control, .form-select {
+        padding: 0.5rem 1rem;
+        border-radius: 0.375rem;
+    }
+    .form-control:focus, .form-select:focus {
+        border-color: #0d6efd;
+        box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+    }
+    textarea.form-control {
+        min-height: 120px;
+    }
+</style>
+{% endblock %}

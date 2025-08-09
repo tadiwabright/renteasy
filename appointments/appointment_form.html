@@ -1,0 +1,180 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+{% load static %}
+
+{% block content %}
+<div class="appointment-form-container">
+    <h2 class="mb-4">
+        {% if object %}Reschedule{% else %}Schedule New{% endif %} Appointment
+        {% if property %}for {{ property.title }}{% endif %}
+    </h2>
+    
+    <form method="POST" id="appointmentForm" class="appointment-form">
+        {% csrf_token %}
+        
+        <!-- Appointment Details -->
+        <div class="card mb-4">
+            <div class="card-header bg-light">
+                <h4 class="mb-0">Appointment Details</h4>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        {{ form.date|as_crispy_field }}
+                    </div>
+                    <div class="col-md-6">
+                        {{ form.time|as_crispy_field }}
+                    </div>
+                </div>
+                
+                <div class="row">
+                    <div class="col-md-6">
+                        {{ form.duration|as_crispy_field }}
+                    </div>
+                    <div class="col-md-6">
+                        {{ form.appointment_type|as_crispy_field }}
+                    </div>
+                </div>
+                
+                {% if form.agent %}
+                <div class="row">
+                    <div class="col-md-12">
+                        {{ form.agent|as_crispy_field }}
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        
+        <!-- Contact Information -->
+        <div class="card mb-4">
+            <div class="card-header bg-light">
+                <h4 class="mb-0">Your Information</h4>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        {{ form.first_name|as_crispy_field }}
+                    </div>
+                    <div class="col-md-6">
+                        {{ form.last_name|as_crispy_field }}
+                    </div>
+                </div>
+                
+                <div class="row">
+                    <div class="col-md-6">
+                        {{ form.email|as_crispy_field }}
+                    </div>
+                    <div class="col-md-6">
+                        {{ form.phone|as_crispy_field }}
+                    </div>
+                </div>
+                
+                {{ form.message|as_crispy_field }}
+            </div>
+        </div>
+        
+        <!-- Reminder Preferences -->
+        <div class="card mb-4">
+            <div class="card-header bg-light">
+                <h4 class="mb-0">Reminder Preferences</h4>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        {{ form.reminder_type|as_crispy_field }}
+                    </div>
+                    <div class="col-md-6">
+                        {{ form.reminder_time|as_crispy_field }}
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="form-actions d-flex justify-content-between">
+            <button type="submit" class="btn btn-primary">
+                <i class="bi bi-calendar-check"></i> {% if object %}Update{% else %}Confirm{% endif %} Appointment
+            </button>
+            <a href="{% if object %}{% url 'appointment_detail' object.id %}{% else %}{% url 'home' %}{% endif %}" 
+               class="btn btn-outline-secondary">
+                <i class="bi bi-x-circle"></i> Cancel
+            </a>
+        </div>
+    </form>
+</div>
+
+<!-- Custom CSS -->
+<style>
+    .appointment-form-container {
+        max-width: 800px;
+        margin: 20px auto;
+        padding: 20px;
+        background: #fff;
+        border-radius: 8px;
+        box-shadow: 0 0 15px rgba(0,0,0,0.05);
+    }
+    
+    .card {
+        border: none;
+        box-shadow: 0 0 10px rgba(0,0,0,0.05);
+    }
+    
+    .card-header {
+        background-color: #f8f9fa !important;
+        border-bottom: 1px solid #eee;
+    }
+    
+    .form-actions {
+        margin-top: 20px;
+    }
+    
+    /* Date picker customization */
+    .datepicker {
+        z-index: 1000 !important;
+    }
+</style>
+
+<!-- JavaScript -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
+<script>
+    $(document).ready(function() {
+        // Initialize datepicker
+        $('#id_date').attr('type', 'date');
+        
+        // Time slot handling
+        $('#id_time').attr('type', 'time');
+        
+        // Duration change handler
+        $('#id_duration').change(function() {
+            // You can add logic to adjust available time slots based on duration
+        });
+        
+        // Appointment type change handler
+        $('#id_appointment_type').change(function() {
+            // You can add logic to adjust form fields based on appointment type
+        });
+        
+        // Form submission handling
+        $('#appointmentForm').submit(function(e) {
+            // Add any client-side validation here
+            const selectedDate = new Date($('#id_date').val());
+            const today = new Date();
+            
+            if (selectedDate < today) {
+                alert('Please select a future date for your appointment.');
+                e.preventDefault();
+                return false;
+            }
+            
+            return true;
+        });
+        
+        // If you want to implement time slot availability checks
+        function checkTimeSlotAvailability(date, time) {
+            // This would typically make an AJAX call to your backend
+            // to check if the selected time slot is available
+        }
+    });
+</script>
+{% endblock %}

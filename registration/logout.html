@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-6 col-md-8 text-center">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body p-4 p-sm-5">
+                    <i class="fi-check-circle text-primary fs-1 mb-4"></i>
+                    <h2 class="mb-4">You've been logged out</h2>
+                    <p class="mb-4">Thank you for using Tenant Network. You have been successfully signed out.</p>
+                    <a href="{% url 'login' %}" class="btn btn-primary">Sign In Again</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
