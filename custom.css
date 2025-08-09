@@ -1,0 +1,29 @@
+/* Custom admin styles */
+#header {
+    background-color: #4a6fa5;
+}
+
+.module h2, .module caption, .inline-group h2 {
+    background-color: #6c8fc7;
+}
+
+div.breadcrumbs {
+    background-color: #5a7fb8;
+}
+
+/* Highlight unverified users */
+.field-is_verified {
+    font-weight: bold;
+}
+
+/* Highlight unapproved documents */
+.field-is_approved {
+    font-weight: bold;
+    color: #dc3545;
+}
+
+/* Make property images visible in list view */
+.field-image img {
+    max-height: 50px;
+    width: auto;
+}
