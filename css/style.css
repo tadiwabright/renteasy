@@ -862,6 +862,7 @@ progress {
   width: 20%;
 }
 
+
 .row-cols-6 > * {
   -webkit-box-flex: 0;
       -ms-flex: 0 0 auto;
